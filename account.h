@@ -3,13 +3,13 @@
 
 #include <stdint.h>
 
-#define NAME_SIZE 10
+#define NAME_SIZE 15
 #define SURNAME_SIZE 10
 #define ADDRESS_SIZE 30
 #define PESEL_SIZE 12
 
 typedef struct{
-    uint32_t number;
+    uint16_t number;
     char name[NAME_SIZE];
     char surname[SURNAME_SIZE];
     char adress[ADDRESS_SIZE];
@@ -20,6 +20,7 @@ typedef struct{
 }account_t;
 
 account_t *new_account();
+void print_account_header();
 void print_account(account_t* account);
 int user_input_account_data(account_t* account);
 
