@@ -1,16 +1,9 @@
 //#include "account.h"
-#include "data.h"
+#include "interface.h"
 
 int main(void){
-    data_open();
-
-    create_new_account();
-    //create_new_account();
-    //create_new_account();
-    //create_new_account();
-
-    accounts_print();
-
-    data_close();
+    system_open();
+    system_run();
+    system_close();
     return 0;
 }

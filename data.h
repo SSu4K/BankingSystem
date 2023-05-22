@@ -9,5 +9,6 @@ int data_open();
 int data_close();
 int create_new_account();
 void accounts_print();
+void account_balance_print(int number);
 
 #endif

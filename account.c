@@ -8,7 +8,11 @@
 
 #define FORMAT(size, F) F(size)
 
-#define ACCOUNT_FORMAT "| %.4X |" FORMAT(SURNAME_SIZE, S) " |" FORMAT(NAME_SIZE, S) " |" FORMAT(ADDRESS_SIZE, S) " |" FORMAT(PESEL_SIZE, S) " |\n"
+#define ACCOUNT_FORMAT "| %.4X |" FORMAT(SURNAME_SIZE, S) " |" FORMAT(NAME_SIZE, S) " |" \
+                                  FORMAT(ADDRESS_SIZE, S) " |" FORMAT(PESEL_SIZE, S) " |\n"
+
+static char* labels[5] = {" id:", " surname:", " name:", " adress:", " pesel:"};
+static int column_widths[5] = {6, SURNAME_SIZE+1, NAME_SIZE+1, ADDRESS_SIZE+1, PESEL_SIZE+1};
 
 account_t *new_account(){
     account_t* account = (account_t*)malloc(sizeof(account_t));
@@ -18,13 +22,19 @@ account_t *new_account(){
     return account;
 }
 
-void print_multiple(char c, int n){
+static void print_multiple(char c, int n){
     for(int i = 0; i<n;i++, printf("%c", c));
 }
 
+void print_account_footer(){
+    for(int label=0; label<5;label++){
+        printf("|");
+        print_multiple('_', column_widths[label]);
+    }
+    printf("|\n");
+}
+
 void print_account_header(){
-    char* labels[5] = {" id:", " surname:", " name:", " adress:", " pesel:"};
-    int column_widths[5] = {6, SURNAME_SIZE+1, NAME_SIZE+1, ADDRESS_SIZE+1, PESEL_SIZE+1};
     int total_width = NAME_SIZE + SURNAME_SIZE + ADDRESS_SIZE + PESEL_SIZE + 8*2;
     print_multiple('_', total_width);
     printf("\n");
@@ -33,6 +43,7 @@ void print_account_header(){
         print_multiple(' ', column_widths[label] - strlen(labels[label]));
     }
     printf("|\n");
+    print_account_footer();
 }
 
 void print_account(account_t* account){

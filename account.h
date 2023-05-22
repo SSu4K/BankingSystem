@@ -21,6 +21,7 @@ typedef struct{
 
 account_t *new_account();
 void print_account_header();
+void print_account_footer();
 void print_account(account_t* account);
 int user_input_account_data(account_t* account);
 
