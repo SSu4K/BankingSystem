@@ -177,7 +177,11 @@ int deposit()
     unsigned int number;
     printf("\nMaking a deposit...\n");
     printf(SYSTEM_PAD("Input account number: "));
-    scanf("%x", &number);
+    if (!scanf("%x", &number))
+    {
+        printf("This account does not exist!\n");
+        return 0;
+    }
     if (check_account_number(number))
     {
         printf(SYSTEM_PAD("Input amount of money: "));
@@ -209,16 +213,17 @@ int withdraw()
     unsigned int number;
     printf("\nMaking a withdrawal...\n");
     printf(SYSTEM_PAD("Input account number: "));
-    scanf("%x", &number);
+    if (!scanf("%x", &number))
+        goto incorrect_input;
     if (check_account_number(number))
     {
         printf(SYSTEM_PAD("Input amount of money: "));
         int money;
-        scanf("%d", &money);
+        if (!scanf("%d", &money))
+            goto incorrect_input;
         if (money < 0)
         {
-            printf("Incorrect number!\n");
-            return 0;
+            goto incorrect_input;
         }
         if (confirm())
         {
@@ -234,6 +239,9 @@ int withdraw()
         printf("This account does not exist!\n");
         return 0;
     }
+incorrect_input:
+    printf("Incorrect input!");
+    return 0;
 }
 
 int transfer()
@@ -242,11 +250,13 @@ int transfer()
     int money;
     printf("\nMaking a transfer...\n");
     printf(SYSTEM_PAD("Input source account number: "));
-    scanf("%x", &source_number);
+    if (!scanf("%x", &source_number))
+        goto incorrect_input;
     if (!check_account_number(source_number))
         goto incorrect_input;
     printf(SYSTEM_PAD("Input destination account number: "));
-    scanf("%x", &destination_number);
+    if (!scanf("%x", &destination_number))
+        goto incorrect_input;
     if (!check_account_number(destination_number))
         goto incorrect_input;
     printf(SYSTEM_PAD("Input amount of money: "));
@@ -254,7 +264,8 @@ int transfer()
     if (money < 0)
         goto incorrect_input;
 
-    if(!confirm()) return 0;
+    if (!confirm())
+        return 0;
 
     if (change_balances(source_number, -money, 0))
     {
@@ -266,6 +277,35 @@ int transfer()
     }
     return 0;
 
+incorrect_input:
+    printf("Incorrect input!");
+    return 0;
+}
+
+int sub_transfer()
+{
+    unsigned int number;
+    int money;
+    int mode = 0;
+    printf("\nMaking a sub-account transfer...\n");
+    printf(SYSTEM_PAD("Input source account number: "));
+    if (!scanf("%x", &number))
+        goto incorrect_input;
+    if (!check_account_number(number))
+        goto incorrect_input;
+    printf(SYSTEM_PAD("0: regular account -> savings account\n"));
+    printf(SYSTEM_PAD("1: savings account -> regular account\n"));
+    printf(SYSTEM_PAD("Choose mode: "));
+    scanf("%d", &mode);
+    printf(SYSTEM_PAD("Input amount of money: "));
+    scanf("%d", &money);
+    if (money < 0)
+        goto incorrect_input;
+    if(mode!=0)
+        money*=(-1);
+    if(!confirm())
+        return 0;
+    return change_balances(number, -money, money);
 incorrect_input:
     printf("Incorrect input!");
     return 0;
@@ -308,7 +348,7 @@ int search()
         printf("\nSearching by account number...\n");
         printf(SYSTEM_PAD("Input account number: "));
         clear_buffer();
-        if(!scanf("%x", &number))
+        if (!scanf("%x", &number))
             goto incorrect_input;
         if (!check_account_number(number))
             goto incorrect_input;
@@ -320,7 +360,7 @@ int search()
         printf("\nSearching by name...\n");
         printf(SYSTEM_PAD("Input name: "));
         clear_buffer();
-        if(!scanf("%[^\n]s", temp->name))
+        if (!scanf("%[^\n]s", temp->name))
             goto incorrect_input;
         if (strlen(temp->name) < MIN_NAME || strlen(temp->name) > NAME_SIZE - 1 || !is_alpha(temp->name))
             goto incorrect_input;
@@ -331,7 +371,7 @@ int search()
         printf("\nSearching by surname...\n");
         printf(SYSTEM_PAD("Input surname: "));
         clear_buffer();
-        if(!scanf("%[^\n]s", temp->surname))
+        if (!scanf("%[^\n]s", temp->surname))
             goto incorrect_input;
         if (strlen(temp->surname) < MIN_NAME || strlen(temp->surname) > SURNAME_SIZE - 1 || !is_alpha(temp->surname))
             goto incorrect_input;
@@ -342,7 +382,7 @@ int search()
         printf("\nSearching by adress...\n");
         printf(SYSTEM_PAD("Input adress: "));
         clear_buffer();
-        if(!scanf("%[^\n]s", temp->adress))
+        if (!scanf("%[^\n]s", temp->adress))
             goto incorrect_input;
         if (strlen(temp->adress) < 1 || strlen(temp->adress) > ADDRESS_SIZE - 1 || !is_alnum(temp->adress))
             goto incorrect_input;
@@ -353,19 +393,19 @@ int search()
         printf("\nSearching by pesel...\n");
         printf(SYSTEM_PAD("Input pesel: "));
         clear_buffer();
-        if(!scanf("%[^\n]s", temp->pesel))
+        if (!scanf("%[^\n]s", temp->pesel))
             goto incorrect_input;
-        if (strlen(temp->pesel) != PESEL_SIZE-1||!is_num(temp->pesel))
+        if (strlen(temp->pesel) != PESEL_SIZE - 1 || !is_num(temp->pesel))
             goto incorrect_input;
         accounts_search(temp, comp_pesel);
     }
 
     free(temp);
     return 1;
-    incorrect_input:
-        free(temp);
-        printf("Incorrect input!");
-        return 0;
+incorrect_input:
+    free(temp);
+    printf("Incorrect input!");
+    return 0;
 }
 
 int get_action()
@@ -411,7 +451,7 @@ int system_run()
         }
         else if (action == 7)
         {
-            success = transfer();
+            success = sub_transfer();
         }
         else if (action == 8)
         {
