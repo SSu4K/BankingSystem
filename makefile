@@ -1,10 +1,10 @@
 all: main
 
 main: main.o interface.o data.o account.o
-	g++ $^ -o $@
+	gcc $^ -o $@
 
 %.o : %.c 
-	g++ -Wall -pedantic $^ -c
+	gcc -Wall -pedantic $^ -c
 
 
 account.o: account.c account.h

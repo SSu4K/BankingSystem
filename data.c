@@ -1,4 +1,5 @@
 #include <string.h>
+#include <limits.h>
 #include "data.h"
 
 #define filename "data.txt"
@@ -93,6 +94,16 @@ void account_print(account_t* account){
 int change_balances(int number, int regular, int savings){
     int id = get_account_id(number);
     read_account(current_account, id);
+    long current_regular = current_account->regular_balance;
+    long current_savings = current_account->savings_balance;
+    if(current_regular < -regular || current_savings < -savings){
+        return 0;
+    }
+    if(regular > 0 && current_regular > LONG_MAX - regular) return 0;
+    if(savings > 0 && current_savings > LONG_MAX - savings) return 0;
+    if(regular < 0 && current_regular < LONG_MIN - regular) return 0;
+    if(savings < 0 && current_savings < LONG_MIN - savings) return 0;
+
     current_account->regular_balance+=regular;
     current_account->savings_balance+=savings;
     write_account(current_account, id);
@@ -126,4 +137,18 @@ void accounts_print(){
     }
     print_account_footer();
     printf("\n");
+}
+
+int accounts_search(account_t *searched, int (*comp)(account_t*, account_t*)){
+    print_account_header();
+    int found = 0;
+    for(int id=0;id<accounts_count;id++){
+        read_account(current_account, id);
+        if(comp(searched, current_account)==0){
+            print_account(current_account);
+            found+=1;
+        }
+    }
+    print_account_footer();
+    return found;
 }

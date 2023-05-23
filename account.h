@@ -23,6 +23,11 @@ account_t *new_account();
 void print_account_header();
 void print_account_footer();
 void print_account(account_t* account);
-int user_input_account_data(account_t* account);
+
+int comp_number(account_t *account1, account_t *account2);
+int comp_name(account_t *account1, account_t *account2);
+int comp_surname(account_t *account1, account_t *account2);
+int comp_adress(account_t *account1, account_t *account2);
+int comp_pesel(account_t *account1, account_t *account2);
 
 #endif

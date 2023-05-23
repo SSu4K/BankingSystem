@@ -13,5 +13,6 @@ void accounts_print();
 void account_balance_print(int number);
 int change_balances(int number, int regular, int savings);
 void data_clean();
+int accounts_search(account_t *searched, int (*)(account_t*, account_t*));
 
 #endif
