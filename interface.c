@@ -1,10 +1,13 @@
-#include "interface.h"
 #include <string.h>
+#include <ctype.h>
+#include "interface.h"
 
 #define INTERFACE_WIDTH 40
+#define MIN_NAME 3
+#define MIN_SURNAME 3
 
-#define LABELS_COUNT 5
-char* labels[LABELS_COUNT] = {"BANKING SYSYTEM", "1. List all accounts" , "2. Add an account", "3. Get accounts balance", "0. Exit"};
+#define LABELS_COUNT 6
+char labels[LABELS_COUNT][30] = {"BANKING SYSYTEM", "1. List all accounts" , "2. Add an account", "3. Get accounts balance", "4. Make a deposit", "0. Exit"};
 
 int system_open(){
     if(data_open()){
@@ -13,6 +16,7 @@ int system_open(){
     }
     return 0;
 }
+
 int system_close(){
     if(data_close()){
         printf("Sucessfully closed the Banking System!\n");
@@ -21,8 +25,107 @@ int system_close(){
     return 0;
 }
 
+void clear_buffer(){
+    char c;
+    while(c = getchar(), c!='\n' && c!=EOF);
+}
+
+int confirm(){
+    printf("This operation will cause permament changes tot the database.");
+    printf("Continue? Y/n ");
+    clear_buffer();
+    char c;
+    if(scanf("%c", &c)){
+        if(c=='Y'||c=='y') return 1;
+    }
+    return 0;
+}
+
 void print_multiple(char c, int n){
     for(int i = 0; i<n;i++, printf("%c", c));
+}
+
+int is_alpha(char *str){
+    while(*str!='\0'){
+        if(!isalpha(*str)) return 0;
+        str++;
+    }
+    return 1;
+}
+
+int is_num(char *str){
+    while(*str!='\0'){
+        if(!isdigit(*str)) return 0;
+        str++;
+    }
+    return 1;
+}
+
+int is_alnum(char *str){
+    while(*str!='\0'){
+        if(!isdigit(*str)&&!isalpha(*str)&&*str!=' '&&*str!='/') return 0;
+        str++;
+    }
+    return 1;
+}
+
+int add_account(){
+    char name[NAME_SIZE];
+    char surname[SURNAME_SIZE];
+    char adress[ADDRESS_SIZE];
+    char pesel[PESEL_SIZE];
+
+    printf("Creating new account...\n\tInput name: ");
+    scanf("%s", name);
+    if(strlen(name)<MIN_NAME||strlen(name)>NAME_SIZE-1||!is_alpha(name)) goto incorrect_data;
+    clear_buffer();
+    printf("\tInput surname: ");
+    scanf("%s", surname);
+    if(strlen(surname)<MIN_NAME||strlen(surname)>SURNAME_SIZE-1||!is_alpha(surname)) goto incorrect_data;
+    clear_buffer();
+    printf("\tInput adress: ");
+    scanf("%[^\n]s", adress);
+    if(strlen(adress)<1||strlen(adress)>ADDRESS_SIZE-1||!is_alnum(adress)) goto incorrect_data;
+    clear_buffer();
+    printf("\tInput pesel: ");
+    scanf("%s", pesel);
+    if(strlen(pesel)!=PESEL_SIZE-1||!is_num(pesel)) goto incorrect_data;
+    clear_buffer();
+
+    if(!confirm()) return 0;
+
+
+    create_new_account(name, surname, adress, pesel);
+    return 1;
+
+    incorrect_data:
+    printf("Incorrect data!\n");
+    return 0;
+}
+
+int deposit(){
+    unsigned int number;
+    printf("Input account number: ");
+    scanf("%x", &number);
+    if(check_account_number(number)){
+        printf("Input amount of money: ");
+        int money;
+        scanf("%d", &money);
+        if(money<0){
+            printf("Incorrect number!\n");
+            return 0;
+        }
+        if(confirm()){
+            change_balances(number, money, 0);
+            return 1;
+        }
+        else{
+            return 0;
+        }
+    }else{
+        printf("This account does not exist!\n");
+        return 0;
+    }
 }
 
 int get_action(){
@@ -50,19 +153,28 @@ int get_action(){
 }
 
 int system_run(){
-    int action;
+    int action = 1;
     while(action = get_action()){
         if(action==1){
             accounts_print();
         }
-        if(action==2){
-            create_new_account();
+        else if(action==2){
+            add_account();
         }
-        if(action==3){
+        else if(action==3){
             unsigned int number;
             printf("Input account number: ");
             scanf("%x", &number);
-            account_balance_print(number);
+            if(check_account_number(number)){
+                account_balance_print(number);
+            }else{
+                printf("This account does not exist!\n");
+            }
+        }
+        else if(action==4){
+            deposit();
         }
     }
+
+    return 0;
 }

@@ -1,3 +1,4 @@
+#include <string.h>
 #include "data.h"
 
 #define filename "data.txt"
@@ -10,7 +11,7 @@ int accounts_count = 0;
 account_t* current_account;
 
 int data_open(){
-    file = fopen(filename, "ab+");
+    file = fopen(filename, "rb+");
     if(file == NULL){
         fprintf(stderr, "Failed to open data file!\n");
         return 0;
@@ -40,7 +41,13 @@ int get_account_id(uint16_t number){
     if(number < ACCOUNT_NUMBER_SHIFT) return -1;
     number-=ACCOUNT_NUMBER_SHIFT;
     if(number%ACCOUNT_NUMBER_MULTIPLY!=0) return -1;
-    return number/ACCOUNT_NUMBER_MULTIPLY;
+    number /=ACCOUNT_NUMBER_MULTIPLY;
+    if(number>=accounts_count) return -1;
+    return number;
+}
+
+int check_account_number(int number){
+    return get_account_id(number)!=-1;
 }
 
 int read_account(account_t* account, int id){
@@ -55,20 +62,40 @@ int write_account(account_t* account, int id){
     return 1;
 }
 
-int create_new_account(){
+int create_new_account(char *name, char *surname, char *adress, char *pesel){
     if(file==NULL){
         return 0;
     }
-    printf("\tCreating a new account:\n");
-    user_input_account_data(current_account);
+    strcpy(current_account->name, name);
+    strcpy(current_account->surname, surname);
+    strcpy(current_account->adress, adress);
+    strcpy(current_account->pesel, pesel);
     current_account->number=get_account_number(accounts_count);
+    print_account(current_account);
     write_account(current_account, accounts_count);
     accounts_count++;
     return 1;
 }
 
-void balance_print(int balance){
-    printf("%d.%.2d zl", balance/100, balance%100);
+void account_print(account_t* account){
+    print_account_header();
+    print_account(account);
+    print_account_footer();
+}
+
+int change_balances(int number, int regular, int savings){
+    int id = get_account_id(number);
+    read_account(current_account, id);
+    print_account(current_account);
+    current_account->regular_balance+=regular;
+    current_account->savings_balance+=savings;
+    printf("%ld", current_account->regular_balance);
+    write_account(current_account, id);
+    return 1;
+}
+
+void balance_print(long int balance){
+    printf("%ld.%.2ld zl", balance/100, balance%100);
 }
 
 void account_balance_print(int number){
@@ -84,12 +111,6 @@ void account_balance_print(int number){
     printf("\nSavings balance: ");
     balance_print(current_account->savings_balance);
     printf("\n");
-}
-
-void account_print(account_t* account){
-    print_account_header();
-    print_account(account);
-    print_account_footer();
 }
 
 void accounts_print(){

@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#define NAME_SIZE 15
-#define SURNAME_SIZE 10
+#define NAME_SIZE 30
+#define SURNAME_SIZE 15
 #define ADDRESS_SIZE 30
 #define PESEL_SIZE 12
 

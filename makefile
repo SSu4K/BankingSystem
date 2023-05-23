@@ -1,19 +1,19 @@
 all: main
 
 main: main.o interface.o data.o account.o
-	gcc -fsanitize=undefined -g $^ -o $@
+	gcc $^ -o $@
 
-.c.o: 
-	gcc -fsanitize=undefined -g -Wall -pedantic -c  $<
+%.o : %.c 
+	gcc -Wall -pedantic $^ -c
 
 
-account.o: account.h account.c
+account.o: account.c account.h
 
-data.o: data.h data.c account.h
+data.o: data.c data.h
 
-interface.o: interface.h interface.c data.h
+interface.o: interface.c interface.h
 
-main.o: main.c data.h account.h
+main.o: main.c interface.h
 
 clean:
-	-rm main.o data.o account.o interface.o main
+	del /f main.o data.o account.o interface.o main

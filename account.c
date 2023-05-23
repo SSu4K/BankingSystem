@@ -11,7 +11,7 @@
 #define ACCOUNT_FORMAT "| %.4X |" FORMAT(SURNAME_SIZE, S) " |" FORMAT(NAME_SIZE, S) " |" \
                                   FORMAT(ADDRESS_SIZE, S) " |" FORMAT(PESEL_SIZE, S) " |\n"
 
-static char* labels[5] = {" id:", " surname:", " name:", " adress:", " pesel:"};
+static char labels[5][20] = {" id:", " surname:", " name:", " adress:", " pesel:"};
 static int column_widths[5] = {6, SURNAME_SIZE+1, NAME_SIZE+1, ADDRESS_SIZE+1, PESEL_SIZE+1};
 
 account_t *new_account(){
@@ -26,7 +26,7 @@ static void print_multiple(char c, int n){
     for(int i = 0; i<n;i++, printf("%c", c));
 }
 
-void print_account_footer(){
+void print_account_footer(void){
     for(int label=0; label<5;label++){
         printf("|");
         print_multiple('_', column_widths[label]);
@@ -50,7 +50,7 @@ void print_account(account_t* account){
     printf(ACCOUNT_FORMAT, account->number, account->surname, account->name, account->adress, account->pesel);
 }
 
-void clear_buffer(){
+static void clear_buffer(){
     char c;
     while(c = getchar(), c!='\n' && c!=EOF);
 }
