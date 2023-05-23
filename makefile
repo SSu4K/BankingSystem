@@ -1,10 +1,10 @@
 all: main
 
 main: main.o interface.o data.o account.o
-	gcc $^ -o $@
+	g++ $^ -o $@
 
 %.o : %.c 
-	gcc -Wall -pedantic $^ -c
+	g++ -Wall -pedantic $^ -c
 
 
 account.o: account.c account.h
@@ -16,4 +16,4 @@ interface.o: interface.c interface.h
 main.o: main.c interface.h
 
 clean:
-	del /f main.o data.o account.o interface.o main
+	-rm main.o data.o account.o interface.o main

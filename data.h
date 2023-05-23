@@ -12,5 +12,6 @@ int create_new_account(char *name, char *surname, char *adress, char *pesel);
 void accounts_print();
 void account_balance_print(int number);
 int change_balances(int number, int regular, int savings);
+void data_clean();
 
 #endif

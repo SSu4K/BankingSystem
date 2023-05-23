@@ -7,7 +7,7 @@
 #define ACCOUNT_NUMBER_MULTIPLY 0x0005
 
 FILE * file;
-int accounts_count = 0;
+static int accounts_count = 0;
 account_t* current_account;
 
 int data_open(){
@@ -16,13 +16,9 @@ int data_open(){
         fprintf(stderr, "Failed to open data file!\n");
         return 0;
     }
-    fprintf(stderr, "Data file opened succesfully!\n");
     current_account = new_account();
     fseek(file, 0, SEEK_END);
     accounts_count=ftell(file)/sizeof(account_t);
-
-    printf("Founf %d accounts.\n", accounts_count);
-    //accounts_count = ftell(file)/sizeof(account_t);
     return 1;
 }
 
@@ -31,6 +27,14 @@ int data_close(){
     free(current_account);
     fprintf(stderr, "File closed!\n");
     return 1;
+}
+
+void data_clean(){
+    fclose(file);
+    file = fopen(filename, "wb+");
+    fclose(file);
+    file = fopen(filename, "rb+");
+    accounts_count = 0;
 }
 
 int get_account_number(int id){
@@ -71,8 +75,11 @@ int create_new_account(char *name, char *surname, char *adress, char *pesel){
     strcpy(current_account->adress, adress);
     strcpy(current_account->pesel, pesel);
     current_account->number=get_account_number(accounts_count);
-    print_account(current_account);
-    write_account(current_account, accounts_count);
+    fclose(file);
+    fopen(filename, "ab");
+    fwrite(current_account, sizeof(account_t), 1, file);
+    fclose(file);
+    fopen(filename, "rb+");
     accounts_count++;
     return 1;
 }
@@ -86,16 +93,14 @@ void account_print(account_t* account){
 int change_balances(int number, int regular, int savings){
     int id = get_account_id(number);
     read_account(current_account, id);
-    print_account(current_account);
     current_account->regular_balance+=regular;
     current_account->savings_balance+=savings;
-    printf("%ld", current_account->regular_balance);
     write_account(current_account, id);
     return 1;
 }
 
 void balance_print(long int balance){
-    printf("%ld.%.2ld zl", balance/100, balance%100);
+    printf("%ld.%.2ld $", balance/100, balance%100);
 }
 
 void account_balance_print(int number){
