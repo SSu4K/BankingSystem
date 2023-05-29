@@ -59,6 +59,8 @@ int system_close()
 void clear_buffer()
 {
     char c;
+    fseek(stdin, 0, SEEK_END);
+    if(ftell(stdin)==0) return;
     while (c = getchar(), c != '\n' && c != EOF)
         ;
 }
@@ -115,13 +117,21 @@ int is_alnum(char *str)
     return 1;
 }
 
+int input_money(){
+    double money=0;
+    if(!scanf("%lf", &money))
+        return -1;
+    if(money<0)
+        return -1;
+    return money*100;
+}
+
 int add_account()
 {
     char name[NAME_SIZE];
     char surname[SURNAME_SIZE];
     char adress[ADDRESS_SIZE];
     char pesel[PESEL_SIZE];
-
     clear_buffer();
     printf("\nCreating new account...\n");
     printf(SYSTEM_PAD("Input name: "));
@@ -157,10 +167,14 @@ incorrect_input:
 
 int check_balance()
 {
-    unsigned int number;
+    unsigned int number=0;
     printf("\nChecking balance...\n");
     printf(SYSTEM_PAD("Input account number: "));
-    scanf("%x", &number);
+    if (!scanf("%x", &number))
+    {
+        printf("This account does not exist!\n");
+        return 0;
+    }
     if (check_account_number(number))
     {
         account_balance_print(number);
@@ -174,7 +188,7 @@ int check_balance()
 
 int deposit()
 {
-    unsigned int number;
+    unsigned int number=0;
     printf("\nMaking a deposit...\n");
     printf(SYSTEM_PAD("Input account number: "));
     if (!scanf("%x", &number))
@@ -185,12 +199,13 @@ int deposit()
     if (check_account_number(number))
     {
         printf(SYSTEM_PAD("Input amount of money: "));
-        int money;
-        scanf("%d", &money);
+        int money=0;
+        if((money=input_money())==-1)
+            goto incorrect_input;
+        
         if (money < 0)
         {
-            printf("Incorrect number!\n");
-            return 0;
+            goto incorrect_input;
         }
         if (confirm())
         {
@@ -206,11 +221,14 @@ int deposit()
         printf("This account does not exist!\n");
         return 0;
     }
+    incorrect_input:
+    printf("Incorrect input!");
+    return 0;
 }
 
 int withdraw()
 {
-    unsigned int number;
+    unsigned int number=0;
     printf("\nMaking a withdrawal...\n");
     printf(SYSTEM_PAD("Input account number: "));
     if (!scanf("%x", &number))
@@ -218,8 +236,8 @@ int withdraw()
     if (check_account_number(number))
     {
         printf(SYSTEM_PAD("Input amount of money: "));
-        int money;
-        if (!scanf("%d", &money))
+        int money=0;
+        if ((money=input_money())==-1)
             goto incorrect_input;
         if (money < 0)
         {
@@ -246,8 +264,9 @@ incorrect_input:
 
 int transfer()
 {
-    unsigned int source_number, destination_number;
-    int money;
+    unsigned int source_number=0;
+    unsigned int destination_number=0;
+    int money=0;
     printf("\nMaking a transfer...\n");
     printf(SYSTEM_PAD("Input source account number: "));
     if (!scanf("%x", &source_number))
@@ -260,7 +279,9 @@ int transfer()
     if (!check_account_number(destination_number))
         goto incorrect_input;
     printf(SYSTEM_PAD("Input amount of money: "));
-    scanf("%d", &money);
+    if((money=input_money())==-1)
+        goto incorrect_input;
+        
     if (money < 0)
         goto incorrect_input;
 
@@ -284,11 +305,12 @@ incorrect_input:
 
 int sub_transfer()
 {
-    unsigned int number;
-    int money;
+    unsigned int number = 0;
+    int money = 0;
     int mode = 0;
     printf("\nMaking a sub-account transfer...\n");
-    printf(SYSTEM_PAD("Input source account number: "));
+    printf(SYSTEM_PAD("Input account number: "));
+    clear_buffer();
     if (!scanf("%x", &number))
         goto incorrect_input;
     if (!check_account_number(number))
@@ -296,9 +318,15 @@ int sub_transfer()
     printf(SYSTEM_PAD("0: regular account -> savings account\n"));
     printf(SYSTEM_PAD("1: savings account -> regular account\n"));
     printf(SYSTEM_PAD("Choose mode: "));
-    scanf("%d", &mode);
+    clear_buffer();
+    if(!scanf("%d", &mode))
+        goto incorrect_input;
+        
     printf(SYSTEM_PAD("Input amount of money: "));
-    scanf("%d", &money);
+    clear_buffer();
+    if((money=input_money())==-1)
+        goto incorrect_input;
+        
     if (money < 0)
         goto incorrect_input;
     if(mode!=0)
@@ -337,11 +365,13 @@ int search()
 {
     print_box(search_labels, SEARCH_LABELS_COUNT);
     printf("\n  Choose field: ");
-    int field;
-    scanf("%d", &field);
+    int field=0;
+    account_t *temp = new_account();
+    clear_buffer();
+    if (!scanf("%d", &field))
+        goto incorrect_input;
     if (field < 1 || field > 5)
         return 1;
-    account_t *temp = new_account();
     if (field == 1)
     {
         unsigned int number;
@@ -411,10 +441,13 @@ incorrect_input:
 int get_action()
 {
     print_box(action_labels, ACTION_LABELS_COUNT);
-    printf("\n  Choose action: ");
 
+    printf("\n  Choose action: ");
     int action;
-    scanf("%d", &action);
+    if (!scanf("%d", &action)){
+        clear_buffer();
+        return -1;
+    }
     return action;
 }
 
@@ -425,6 +458,10 @@ int system_run()
     while ((action = get_action()))
     {
         success = 1;
+        if (action == -1 || action >= ACTION_LABELS_COUNT)
+        {
+            continue;
+        }
         if (action == 1)
         {
             accounts_print();
